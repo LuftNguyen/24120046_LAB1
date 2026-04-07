@@ -71,8 +71,11 @@ async def predict_route(request: PredictRequest):
         coords = torch.tensor([[[loc.x, loc.y] for loc in locations]], dtype=torch.float32)
         
         with torch.no_grad():
-            # Suy luận (Inference)
-            cost, pi = model(coords, decode_type="greedy")
+            # 1. Cài đặt chiến lược giải (Greedy: chọn điểm tốt nhất ở mỗi bước)
+            model.set_decode_type("greedy")
+            
+            # 2. Suy luận và yêu cầu trả về thứ tự điểm (return_pi=True)
+            cost, pi = model(coords, return_pi=True)
         
         # Lấy thứ tự index
         tour_indices = pi[0].cpu().numpy().tolist()
