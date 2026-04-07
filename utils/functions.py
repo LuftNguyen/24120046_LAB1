@@ -11,7 +11,7 @@ import torch.nn.functional as F
 
 
 def load_problem(name):
-    from problems import TSP, CVRP, SDVRP, OP, PCTSPDet, PCTSPStoch
+    from problems import TSP
     problem = {
         'tsp': TSP,
         'cvrp': CVRP,
