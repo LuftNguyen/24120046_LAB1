@@ -7,11 +7,7 @@ API_URL = "https://fzxst-34-73-47-24.run.pinggy-free.link/predict"
 payload = {
     "start_location": {"id": 0, "x": 0.8, "y": 0.2}, # User đang ở giữa bản đồ
     "destinations": [
-        {"id": 1, "x": 0.1, "y": 0.1},
-        {"id": 2, "x": 0.9, "y": 0.4},
-        {"id": 3, "x": 0.8, "y": 0.5},
-        {"id": 4, "x": 0.9, "y": 0.1},
-        {"id": 5, "x": 0.5, "y": 0.4}
+        {"id": 1, "x": -0.1, "y": -0.1}
     ]
 }
 

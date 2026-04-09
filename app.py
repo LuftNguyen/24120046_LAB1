@@ -10,14 +10,14 @@ import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from utils.functions import load_model
 
-# --- KHỞI TẠO FASTAPI ---
+# Khởi tạo FastAPI
 app = FastAPI(
     title="TSP Optimization API",
     description="Hệ thống AI tối ưu hóa lộ trình giao hàng thực tế (Hỗ trợ GPS).",
     version="1.0.0"
 )
 
-# --- 1. ĐỊNH NGHĨA CẤU TRÚC DỮ LIỆU ---
+# Định nghĩa cấu trúc dữ liệu bằng pydantic
 class Location(BaseModel):
     id: int
     x: float = Field(..., description="Tọa độ X hoặc Kinh độ thực tế")
@@ -27,7 +27,7 @@ class PredictRequest(BaseModel):
     start_location: Location = Field(..., description="Vị trí bắt đầu của User")
     destinations: List[Location] = Field(..., min_items=1, description="Các điểm cần đi")
 
-# --- 2. HÀM BỔ TRỢ (TIỀN XỬ LÝ VÀ HẬU XỬ LÝ) ---
+# Tiền xử lý và hậu xử lý tọa độ - Chuẩn hóa về 0.0 - 1.0 và tính tỷ lệ bản đồ
 def normalize_coordinates(points):
     """Chuẩn hóa GPS thực tế về khoảng 0.0 - 1.0 nhưng GIỮ NGUYÊN TỶ LỆ BẢN ĐỒ (Uniform Scaling)"""
     xs = [p.x for p in points]
@@ -38,7 +38,7 @@ def normalize_coordinates(points):
     range_x = max_x - min_x
     range_y = max_y - min_y
     
-    # TÌM KHOẢNG CÁCH LỚN NHẤT ĐỂ LÀM HỆ SỐ CHIA CHUNG
+    # Khoảng cách lớn nhất để làm hệ số chia chung
     max_range = max(range_x, range_y)
     
     # Tránh lỗi chia cho 0 nếu tất cả các điểm trùng nhau
@@ -47,7 +47,7 @@ def normalize_coordinates(points):
     
     normalized_list = []
     for p in points:
-        # Chia cả X và Y cho CÙNG MỘT SỐ max_range để không làm méo bản đồ
+        # Chia cả X và Y cho max_range
         norm_x = (p.x - min_x) / max_range
         norm_y = (p.y - min_y) / max_range
         normalized_list.append([norm_x, norm_y])
@@ -55,16 +55,14 @@ def normalize_coordinates(points):
     return normalized_list
 
 def calculate_open_path_distance(indices, points):
-    """Tính tổng quãng đường thực tế (Không tính lượt quay về)"""
     dist = 0.0
     for i in range(len(indices) - 1):
         p1 = points[indices[i]]
         p2 = points[indices[i+1]]
-        # Sử dụng khoảng cách Euclid cơ bản
         dist += math.sqrt((p1.x - p2.x)**2 + (p1.y - p2.y)**2)
     return dist
 
-# --- 3. NẠP MODEL KHI KHỞI ĐỘNG ---
+# Nạp model AI từ epoch-99.pt
 MODEL_PATH = "pretrained/epoch-99.pt"
 try:
     model, _ = load_model(MODEL_PATH)
@@ -74,7 +72,7 @@ except Exception as e:
     print(f"Lỗi khởi tạo model: {e}")
     MODEL_READY = False
 
-# --- 4. CÁC ĐẦU MÚT API (ENDPOINTS) ---
+# Endpoints
 
 @app.get("/")
 async def root():
@@ -99,28 +97,28 @@ async def predict(request: PredictRequest):
     if not MODEL_READY:
         raise HTTPException(status_code=503, detail="Model chưa sẵn sàng")
 
-    # BƯỚC 1: Hợp nhất dữ liệu
+    # Hợp nhất dữ liệu
     all_points = [request.start_location] + request.destinations
     
-    # BƯỚC 2: Tiền xử lý (Chuẩn hóa tọa độ) và ép kiểu Tensor
+    # Tiền xử lý (Chuẩn hóa tọa độ) và ép kiểu Tensor
     norm_coords = normalize_coordinates(all_points)
     coords = torch.tensor([norm_coords], dtype=torch.float32)
 
     try:
-        # BƯỚC 3: AI Suy luận
+        # Suy luận
         with torch.no_grad():
             model.set_decode_type("greedy")
             _, _, pi = model(coords, return_pi=True)
         
         tour_indices = pi[0].cpu().numpy().tolist()
 
-        # BƯỚC 4: Hậu xử lý (Xoay mảng & Tìm đường đi mở tốt nhất)
+        # Hậu xử lý (Xoay mảng & Tìm đường đi mở tốt nhất)
         start_position_in_tour = tour_indices.index(0)
         
         forward_indices = tour_indices[start_position_in_tour:] + tour_indices[:start_position_in_tour]
         reverse_indices = [forward_indices[0]] + forward_indices[1:][::-1]
 
-        # Tính khoảng cách dựa trên TỌA ĐỘ THẬT ban đầu
+        # Tính khoảng cách dựa trên tọa độ  ban đầu
         dist_forward = calculate_open_path_distance(forward_indices, all_points)
         dist_reverse = calculate_open_path_distance(reverse_indices, all_points)
 
@@ -133,7 +131,7 @@ async def predict(request: PredictRequest):
 
         optimized_order = [all_points[i].model_dump() for i in final_indices]
 
-        # BƯỚC 5: Trả về JSON theo cấu trúc rõ ràng
+        # Trả về JSON 
         return {
             "status": "success",
             "start_point_id": request.start_location.id,

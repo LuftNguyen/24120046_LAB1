@@ -36,8 +36,7 @@ uvicorn app:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 ### Cách 2: Đưa API lên Internet bằng Pinggy
-Bạn có thể dùng Pinggy để chia sẻ API cho người khác
-Đảm bảo máy chủ cục bộ đang chạy và mở Terminal/Command Prompt mới và chạy lệnh SSH
+Bạn có thể dùng Pinggy để chia sẻ API cho người khác. Hãy đảm bảo máy chủ cục bộ đang chạy và mở Terminal/Command Prompt mới và chạy lệnh SSH
 
 ```bash
 ssh -p 443 -R0:localhost:8000 a.pinggy.io
@@ -134,6 +133,8 @@ ssh -p 443 -R0:localhost:8000 a.pinggy.io
   ]
 }
 ```
+## Video Demo
+- **Google drive: ** [https://drive.google.com/file/d/1RW3WiQZY3J9orMJDOkFeWc2ujlkip3rL/view?usp=sharing] 
 
 
 
