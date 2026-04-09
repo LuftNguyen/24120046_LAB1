@@ -134,7 +134,7 @@ ssh -p 443 -R0:localhost:8000 a.pinggy.io
 }
 ```
 ## Video Demo
-- **Google drive: ** [https://drive.google.com/file/d/1RW3WiQZY3J9orMJDOkFeWc2ujlkip3rL/view?usp=sharing] 
+- **Google drive:** [https://drive.google.com/file/d/1RW3WiQZY3J9orMJDOkFeWc2ujlkip3rL/view?usp=sharing] 
 
 
 
